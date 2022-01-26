@@ -1,0 +1,74 @@
+Question 3: 
+    Count records *
+    How many taxi trips were there on January 15?
+
+    SELECT COUNT(1)
+    FROM 
+	    yellow_taxi_trips
+    WHERE
+	    CAST(tpep_pickup_datetime As Date)='2021-01-15'
+
+
+Question 4: 
+    Largest tip for each day *
+    On which day it was the largest tip in January? (note: it's not a typo, it's "tip", not "trip")
+
+    SELECT 
+	    CAST(tpep_pickup_datetime AS DATE) as "Janday",
+	    MAX(tip_amount) as "Largest-tip"
+    FROM
+	    yellow_taxi_trips
+    GROUP BY "Janday"
+    ORDER BY "Largest-tip" DESC
+
+Question 5: 
+    Most popular destination *
+    What was the most popular destination for passengers picked up in central park on January 14? 
+    Enter the zone name (not id). If the zone name is unknown (missing), write "Unknown"
+
+    SELECT 
+        dz."Zone" as dest, COUNT(1) as popularcount
+    FROM
+        yellow_taxi_trips t,
+        zones dz,
+        zones pz
+    WHERE
+        pz."Zone"='Central Park' AND
+        t."PULocationID"=pz."LocationID" AND
+        t."DOLocationID"=dz."LocationID" AND
+        CAST(t.tpep_pickup_datetime as DATE) = '2021-01-14'
+    GROUP BY dest
+    ORDER BY popularcount DESC
+
+Question 6: 
+    Most expensive route *
+    What's the pickup-dropoff pair with the largest average price for a ride (calculated based on total_amount)? 
+    Enter two zone names separated by a slashFor example:"Jamaica Bay / Clinton East"If any of the zone names are unknown (missing), write "Unknown". For example, "Unknown / Clinton East".
+
+    SELECT
+        concat(
+        (
+            CASE
+            WHEN pz."Zone" IS NULL THEN
+                'Unknown'
+            ELSE
+                pz."Zone"
+            END
+        ), '/',
+        (
+            CASE
+            WHEN dz."Zone" IS NULL THEN
+                'Unknown'
+            ELSE
+                dz."Zone"
+            END
+        ) ) as pd,
+        total_amount::NUMERIC(10,2) as totamt
+    FROM
+        yellow_taxi_trips t,
+        zones pz,
+        zones dz
+    WHERE
+        t."PULocationID" = pz."LocationID" AND
+        t."DOLocationID" = dz."LocationID"
+        ORDER BY totamt DESC
